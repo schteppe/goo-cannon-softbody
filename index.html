@@ -1,0 +1,175 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="chrome=1">
+	<title>Soft body simulation - Goo Create</title>
+	<script>
+	// If you try to load a scene without a server, you're gonna have a bad time
+	if (window.location.protocol==='file:') {
+		console.warn('Looks like you\'re running this Goo Create directly from your file system (file://). It may not work. Read more: https://learn.goocreate.com/manual/publishing/self-hosting/');
+		/*
+
+		Loading scenes uses AJAX requests, which require that the webpage is
+		accessed via http. Setting up a web server is not very complicated, and
+		there are lots of free options. Here are some suggestions that will do
+		the job and do it well, but there are lots of other options.
+
+		- Windows
+		Apache (http://httpd.apache.org/docs/current/platform/windows.html)
+		nginx (http://nginx.org/en/docs/windows.html)
+		mongoose (https://code.google.com/p/mongoose/)
+
+		- Linux
+		Most distributions have neat packages for Apache (http://httpd.apache.org/)
+		and nginx (http://nginx.org/en/docs/windows.html) and about a gazillion
+		other options that didn't fit here. One option is calling
+		'python -m SimpleHTTPServer' inside the unpacked folder if you have
+		python installed.
+
+		- Mac OS X
+		Most Mac users will have Apache web server bundled with the OS.
+		Read this to get started: http://osxdaily.com/2012/09/02/start-apache-web-server-mac-os-x/
+
+		*/
+	}
+
+	// Use goo without require. Needed to make pack dependencies in external scripts work.
+	window.goo = {useOwnRequire: true};
+	</script>
+
+	<!-- disable native mobile pinch-to-zoom, replacing with the Goo Engine zoom -->
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+
+	
+
+	<!-- og -->
+	
+	<meta property="og:image" content="res/10d188ae046d4b160e6299d526926f7211781ea9.jpg">
+	
+	
+	<meta property="og:title" content="Soft body simulation"/>
+	<meta property="og:description" content="Made with Goo Create">
+	<meta property="og:updated_time" content="2016-07-18T08:40:20.535108+00:00"/>
+	<meta property="og:site_name" content="Goo Create"/>
+	<meta property="og:type" content="website"/>
+	<!-- /og -->
+
+	<link rel="icon" href="favicon.png" type="image/png" />
+	<link rel="stylesheet" type="text/css" href="style/style.css">
+
+	
+	<script src="lib/goo.js"></script>
+	
+	<script src="lib/cannon/cannon.min.js"></script>
+	
+	<script src="lib/fsmpack.js"></script>
+	
+	<script src="lib/quadpack.js"></script>
+	
+	<script src="lib/timelinepack.js"></script>
+	
+	<script src="lib/scriptpack.js"></script>
+	
+	<script src="lib/passpack.js"></script>
+	
+	<script src="lib/particlepack.js"></script>
+	
+	<script src="lib/animationpack.js"></script>
+	
+	<script src="lib/physicspack.js"></script>
+	
+
+	
+
+	
+	
+</head>
+
+<body class="standard-theme ">
+	<!--
+	This screen is shown right away when the page and contains a progress bar
+	and the scene name and description. It stays visible until the scene is
+	fully loaded into the engine and then it is faded out to reveal the	canvas
+	screen below.
+	-->
+	<div id="loading-screen" class="visible">
+		<div class="content">
+			<div id="progress-bar">
+				<div class="logo"></div>
+				<div id="progress"></div>
+			</div>
+			<h1>Soft body simulation</h1>
+			
+		</div>
+	</div>
+
+	<!--
+	This screen is shown after the scene is loaded. It contains the canvas where
+	the scene is displayed as well as the bottom bar with the scene	name, share
+	buttons, etc.
+	-->
+	<div id="canvas-screen">
+		<div id="canvas-outer">
+			<div id="canvas-inner"><!-- The canvas is added here --></div>
+		</div>
+		<div id="bottom-bar">
+			<a class="logo-link" href="http://www.goocreate.com" target="_blank">
+				<span class="logo icon-logo"></span>
+			</a>
+			<div class="scene-name">Soft body simulation</div>
+			<div id="share-buttons">
+				<a
+					class="btn icon-facebook"
+					onclick="javascript:window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href), '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=400,width=500');return false;"
+				></a><a
+					class="btn icon-googleplus"
+					onclick="javascript:window.open('https://plus.google.com/share?url='+encodeURIComponent(location.href), '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"
+				></a><a
+					class="btn icon-twitter"
+					onclick="javascript:window.open('https://twitter.com/share?url='+encodeURIComponent(location.href), '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=300,width=600');return false;"
+				></a>
+			</div>
+			<div id="action-buttons">
+				<a
+					id="duplicate-button"
+					class="btn icon-fork"
+					href="https://create.goocreate.com/edit/b3bbff28f63148ad8d64f992730e1e2a.scene"
+					target="_blank"
+				></a><button
+					id="maximize-button"
+					class="btn icon-maximize"
+				></button><button
+					id="mute-button"
+					class="btn icon-sound"
+				></button>
+			</div>
+		</div>
+	</div>
+
+	
+	<div id="fallback" style="background-image: url(res/10d188ae046d4b160e6299d526926f7211781ea9.jpg)">
+	
+		<h1>WebGL not supported or not enabled</h1>
+	</div>
+
+	<!-- Handles the sizing, scrolling and alignment of the canvas. -->
+	<script src="js/CanvasWrapper.js"></script>
+
+	<!-- Checks if the browser supports WebGL. -->
+	<script src="js/WebGLSupport.js"></script>
+
+	<!-- Required for the serve.js (gsrv). -->
+	<script src="js/GSRVMock.js"></script>
+
+	<!-- Oh old browsers! -->
+	<!--[if IE 9]><script src="js/shims.js"></script><![endif]-->
+
+	<!--
+	Main file which handles the loading of the scene into the engine,
+	displays the fallback messages (see HTML above), sets up event
+	listeners, etc.
+	-->
+	<script src="js/main.js"></script>
+</body>
+</html>
